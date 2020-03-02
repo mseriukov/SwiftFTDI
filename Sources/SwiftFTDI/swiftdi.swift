@@ -370,7 +370,11 @@ public class FTDI {
     }
 
     public struct FTDIDevice {
-        let libusbDevice: OpaquePointer
+        public let vendor: Int32
+        public let product: Int32
+        public let manufacturer: String
+        public let description: String
+        public let serialNumber: String
     }
 
     private let context: UnsafeMutablePointer<ftdi_context>!
@@ -411,7 +415,22 @@ public class FTDI {
         var result: [FTDIDevice] = []
 
         while true {
-            result.append(FTDIDevice(libusbDevice: ftdiList.dev))
+
+            let bufferLength: Int32 = 256
+            let manufacturerBuf = UnsafeMutablePointer<Int8>.allocate(capacity: Int(bufferLength))
+            let descriptionBuf = UnsafeMutablePointer<Int8>.allocate(capacity: Int(bufferLength))
+            let serialBuf = UnsafeMutablePointer<Int8>.allocate(capacity: Int(bufferLength))
+
+            ftdi_usb_get_strings(context, ftdiList.dev, manufacturerBuf, bufferLength, descriptionBuf, bufferLength, serialBuf, bufferLength)
+            let device = FTDIDevice(
+                vendor: vendor,
+                product: product,
+                manufacturer: String(cString: manufacturerBuf),
+                description: String(cString: descriptionBuf),
+                serialNumber:String(cString: serialBuf)
+            )
+
+            result.append(device)
             guard let next = ftdiList.next else { break }
             ftdiList = next.pointee
         }
