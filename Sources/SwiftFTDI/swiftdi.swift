@@ -1,4 +1,5 @@
 import clibftdi
+import Foundation
 
 public class FTDI {
 
@@ -392,12 +393,9 @@ public class FTDI {
     }
 
     public func setInterface(_ interface: Interface) {
-        ftdi_set_interface(context,  interface.ftdiInterface)
+        let ret = ftdi_set_interface(context,  interface.ftdiInterface)
+        print(ret)
     }
-
-    //public func setUSBDevice() {
-
-    //}
 
     public func getLibraryVersion() -> VersionInfo {
         return VersionInfo(ftdi_get_library_version())
@@ -440,7 +438,7 @@ public class FTDI {
     }
 
     public func usbOpenDescIndex(vendor: Int32? = nil, product: Int32? = nil, description: String? = nil, serial: String? = nil, index: UInt32 = 0) {
-        ftdi_usb_open_desc_index(
+        let ret = ftdi_usb_open_desc_index(
             context,
             vendor ?? 0,
             product ?? 0,
@@ -450,8 +448,67 @@ public class FTDI {
         )
     }
 
+    public func writeData(_ data: Data) {
+        let count = Int32(data.count)
+        data.withUnsafeBytes { ptr in
+            let buf = ptr.bindMemory(to: UInt8.self)
+            let ret = ftdi_write_data(self.context, buf.baseAddress!, count)
+        }
+    }
+
+    public func readDataSetChunksize(_ chunksize: UInt32) {
+        ftdi_read_data_set_chunksize(context, chunksize)
+    }
+
+    public func readDataGetChunksize() -> UInt32 {
+        let result = UnsafeMutablePointer<UInt32>.allocate(capacity: 1)
+        defer { result.deallocate() }
+        ftdi_read_data_get_chunksize(context, result)
+        return result.pointee
+    }
+
     public func setBitmode(bitmask: UInt8, mode: Bitmode) {
-        ftdi_set_bitmode(context, bitmask, mode.rawValue)
+        let ret = ftdi_set_bitmode(context, bitmask, mode.rawValue)
+        print(ret)
+    }
+
+    public func disableBitbang() {
+        ftdi_disable_bitbang(context)
+    }
+
+    public func readPins() -> UInt8 {
+        let result = UnsafeMutablePointer<UInt8>.allocate(capacity: 1)
+        defer { result.deallocate() }
+        ftdi_read_pins(context, result)
+        return result.pointee
+    }
+
+    public func setLatencyTimer(_ latency: UInt8) {
+        ftdi_set_latency_timer(context, latency)
+    }
+
+    public func getLatencyTimer() -> UInt8 {
+        let result = UnsafeMutablePointer<UInt8>.allocate(capacity: 1)
+        defer { result.deallocate() }
+        ftdi_get_latency_timer(context, result)
+        return result.pointee
+    }
+
+    public func pollModemStatus() -> UInt16 {
+        let result = UnsafeMutablePointer<UInt16>.allocate(capacity: 1)
+        defer { result.deallocate() }
+        ftdi_poll_modem_status(context, result)
+        return result.pointee
+    }
+
+    public func setFlowCtl(_ flowControl: )
+
+}
+
+extension FTDI {
+
+    public func writePins(_ pins: UInt8) {
+        writeData(Data(repeating: pins, count: 1))
     }
 
 }
