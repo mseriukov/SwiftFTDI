@@ -1,0 +1,5 @@
+module clibftdi [system] {
+    header "/usr/local/include/libftdi1/ftdi.h"
+    link "libftdi1"
+    export *    
+}
