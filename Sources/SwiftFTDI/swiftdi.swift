@@ -82,28 +82,29 @@ public class FTDI {
         }
     }
 
-    public enum MpsseMode: UInt32 {
-        case bitmodeReset
-        case bitmodeBitbang
-        case bitmodeMPSSE
-        case bitmodeSYNCBB
-        case bitmodeMCU
-        case bitmodeOPTO
-        case bitmodeCBUS
-        case bitmodeSYNCFF
-        case bitmodeFT1284
+    // MPSSE mode
+    public enum Bitmode: UInt8 {
+        case reset
+        case bitbang
+        case mpsse
+        case syncbb
+        case mcu
+        case opto
+        case cbus
+        case syncff
+        case ft1284
 
-        public var rawValue: UInt32 {
+        public var rawValue: UInt8 {
             switch self {
-            case .bitmodeReset: return BITMODE_RESET.rawValue
-            case .bitmodeBitbang: return BITMODE_BITBANG.rawValue
-            case .bitmodeMPSSE: return BITMODE_MPSSE.rawValue
-            case .bitmodeSYNCBB: return BITMODE_SYNCBB.rawValue
-            case .bitmodeMCU: return BITMODE_MCU.rawValue
-            case .bitmodeOPTO: return BITMODE_OPTO.rawValue
-            case .bitmodeCBUS: return BITMODE_CBUS.rawValue
-            case .bitmodeSYNCFF: return BITMODE_SYNCFF.rawValue
-            case .bitmodeFT1284: return BITMODE_FT1284.rawValue
+            case .reset: return UInt8(BITMODE_RESET.rawValue)
+            case .bitbang: return UInt8(BITMODE_BITBANG.rawValue)
+            case .mpsse: return UInt8(BITMODE_MPSSE.rawValue)
+            case .syncbb: return UInt8(BITMODE_SYNCBB.rawValue)
+            case .mcu: return UInt8(BITMODE_MCU.rawValue)
+            case .opto: return UInt8(BITMODE_OPTO.rawValue)
+            case .cbus: return UInt8(BITMODE_CBUS.rawValue)
+            case .syncff: return UInt8(BITMODE_SYNCFF.rawValue)
+            case .ft1284: return UInt8(BITMODE_FT1284.rawValue)
             }
         }
     }
@@ -436,6 +437,21 @@ public class FTDI {
         }
 
         return result
+    }
+
+    public func usbOpenDescIndex(vendor: Int32? = nil, product: Int32? = nil, description: String? = nil, serial: String? = nil, index: UInt32 = 0) {
+        ftdi_usb_open_desc_index(
+            context,
+            vendor ?? 0,
+            product ?? 0,
+            description,
+            serial,
+            index
+        )
+    }
+
+    public func setBitmode(bitmask: UInt8, mode: Bitmode) {
+        ftdi_set_bitmode(context, bitmask, mode.rawValue)
     }
 
 }
