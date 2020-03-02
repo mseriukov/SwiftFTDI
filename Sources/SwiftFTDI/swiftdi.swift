@@ -142,94 +142,94 @@ public class FTDI {
         }
     }
 
-    enum Commands {
-        enum MPSSE {
-            static let writeNeg = MPSSE_WRITE_NEG
-            static let bitmode = MPSSE_BITMODE
-            static let readNeg = MPSSE_READ_NEG
-            static let lsb = MPSSE_LSB
-            static let doWrite = MPSSE_DO_WRITE
-            static let doRead = MPSSE_DO_READ
-            static let writeTMS = MPSSE_WRITE_TMS
+    public enum Commands {
+        public enum MPSSE {
+            public static let writeNeg = MPSSE_WRITE_NEG
+            public static let bitmode = MPSSE_BITMODE
+            public static let readNeg = MPSSE_READ_NEG
+            public static let lsb = MPSSE_LSB
+            public static let doWrite = MPSSE_DO_WRITE
+            public static let doRead = MPSSE_DO_READ
+            public static let writeTMS = MPSSE_WRITE_TMS
         }
 
-        static let setBitsLow = SET_BITS_LOW
-        static let setBitsHigh = SET_BITS_HIGH
-        static let getBitsLow = GET_BITS_LOW
-        static let getBitsHigh = GET_BITS_HIGH
-        static let loopbackStart = LOOPBACK_START
-        static let loopbackEnd = LOOPBACK_END
-        static let tckDivisor = TCK_DIVISOR
+        public static let setBitsLow = SET_BITS_LOW
+        public static let setBitsHigh = SET_BITS_HIGH
+        public static let getBitsLow = GET_BITS_LOW
+        public static let getBitsHigh = GET_BITS_HIGH
+        public static let loopbackStart = LOOPBACK_START
+        public static let loopbackEnd = LOOPBACK_END
+        public static let tckDivisor = TCK_DIVISOR
 
-        static let disDiv5 = DIS_DIV_5
-        static let enDiv5 = EN_DIV_5
-        static let en3phase = EN_3_PHASE
-        static let clkBits = CLK_BITS
-        static let clkBytes = CLK_BYTES
-        static let clkWaitHigh = CLK_WAIT_HIGH
-        static let clkWaitLow = CLK_WAIT_LOW
-        static let enAdaptive = EN_ADAPTIVE
-        static let disAdaptive = DIS_ADAPTIVE
-        static let clkBytesOrHigh = CLK_BYTES_OR_HIGH
-        static let clkBytesOrLow = CLK_BYTES_OR_LOW
+        public static let disDiv5 = DIS_DIV_5
+        public static let enDiv5 = EN_DIV_5
+        public static let en3phase = EN_3_PHASE
+        public static let clkBits = CLK_BITS
+        public static let clkBytes = CLK_BYTES
+        public static let clkWaitHigh = CLK_WAIT_HIGH
+        public static let clkWaitLow = CLK_WAIT_LOW
+        public static let enAdaptive = EN_ADAPTIVE
+        public static let disAdaptive = DIS_ADAPTIVE
+        public static let clkBytesOrHigh = CLK_BYTES_OR_HIGH
+        public static let clkBytesOrLow = CLK_BYTES_OR_LOW
 
-        static let driveOpenCollector = DRIVE_OPEN_COLLECTOR
+        public static let driveOpenCollector = DRIVE_OPEN_COLLECTOR
 
-        static let sendImmediate = SEND_IMMEDIATE
-        static let waitOnHigh = WAIT_ON_HIGH
-        static let waitOnLow = WAIT_ON_LOW
+        public static let sendImmediate = SEND_IMMEDIATE
+        public static let waitOnHigh = WAIT_ON_HIGH
+        public static let waitOnLow = WAIT_ON_LOW
 
-        static let readShort = READ_SHORT
-        static let readExtended = READ_EXTENDED
+        public static let readShort = READ_SHORT
+        public static let readExtended = READ_EXTENDED
 
-        static let writeShort = WRITE_SHORT
-        static let writeExtended = WRITE_EXTENDED
+        public static let writeShort = WRITE_SHORT
+        public static let writeExtended = WRITE_EXTENDED
 
-        enum FlowControl {
-            static let sioReset = SIO_RESET
-            static let sioModemCtrl = SIO_MODEM_CTRL
-            static let sioSetFlowCtrl = SIO_SET_FLOW_CTRL
-            static let sioSetBaudRate = SIO_SET_BAUD_RATE
-            static let sioSetData = SIO_SET_DATA
+        public enum FlowControl {
+            public static let sioReset = SIO_RESET
+            public static let sioModemCtrl = SIO_MODEM_CTRL
+            public static let sioSetFlowCtrl = SIO_SET_FLOW_CTRL
+            public static let sioSetBaudRate = SIO_SET_BAUD_RATE
+            public static let sioSetData = SIO_SET_DATA
         }
 
-        enum Requests {
-            static let sioReset = SIO_RESET_REQUEST
-            static let sioSetBaudrate = SIO_SET_BAUDRATE_REQUEST
-            static let sioSetData = SIO_SET_DATA_REQUEST
-            static let sioSetFlowCtrl = SIO_SET_FLOW_CTRL_REQUEST
-            static let sioSetModemCtrl = SIO_SET_MODEM_CTRL_REQUEST
-            static let sioPollModemStatus = SIO_POLL_MODEM_STATUS_REQUEST
-            static let sioSetEventChar = SIO_SET_EVENT_CHAR_REQUEST
-            static let sioSetErrorChar = SIO_SET_ERROR_CHAR_REQUEST
-            static let sioSetLatencyTimer = SIO_SET_LATENCY_TIMER_REQUEST
-            static let sioGetLatencyTimer = SIO_GET_LATENCY_TIMER_REQUEST
-            static let sioSetBitmode = SIO_SET_BITMODE_REQUEST
-            static let sioReadPins = SIO_READ_PINS_REQUEST
-            static let sioReadEEPROM = SIO_READ_EEPROM_REQUEST
-            static let sioWriteEEPROM = SIO_WRITE_EEPROM_REQUEST
-            static let sioEraseEEPROM = SIO_ERASE_EEPROM_REQUEST
+        public enum Requests {
+            public static let sioReset = SIO_RESET_REQUEST
+            public static let sioSetBaudrate = SIO_SET_BAUDRATE_REQUEST
+            public static let sioSetData = SIO_SET_DATA_REQUEST
+            public static let sioSetFlowCtrl = SIO_SET_FLOW_CTRL_REQUEST
+            public static let sioSetModemCtrl = SIO_SET_MODEM_CTRL_REQUEST
+            public static let sioPollModemStatus = SIO_POLL_MODEM_STATUS_REQUEST
+            public static let sioSetEventChar = SIO_SET_EVENT_CHAR_REQUEST
+            public static let sioSetErrorChar = SIO_SET_ERROR_CHAR_REQUEST
+            public static let sioSetLatencyTimer = SIO_SET_LATENCY_TIMER_REQUEST
+            public static let sioGetLatencyTimer = SIO_GET_LATENCY_TIMER_REQUEST
+            public static let sioSetBitmode = SIO_SET_BITMODE_REQUEST
+            public static let sioReadPins = SIO_READ_PINS_REQUEST
+            public static let sioReadEEPROM = SIO_READ_EEPROM_REQUEST
+            public static let sioWriteEEPROM = SIO_WRITE_EEPROM_REQUEST
+            public static let sioEraseEEPROM = SIO_ERASE_EEPROM_REQUEST
         }
 
-        static let sioResetSio = SIO_RESET_SIO
-        static let sioResetPurfeRx = SIO_RESET_PURGE_RX
-        static let sioresetPurgeTx = SIO_RESET_PURGE_TX
+        public static let sioResetSio = SIO_RESET_SIO
+        public static let sioResetPurfeRx = SIO_RESET_PURGE_RX
+        public static let sioresetPurgeTx = SIO_RESET_PURGE_TX
 
-        static let sioDisableFlowCtrl = SIO_DISABLE_FLOW_CTRL
-        static let sioRtsCtsHs = SIO_RTS_CTS_HS
-        static let sioDtrDtsHs = SIO_DTR_DSR_HS
-        static let sioXonXoffHs = SIO_XON_XOFF_HS
+        public static let sioDisableFlowCtrl = SIO_DISABLE_FLOW_CTRL
+        public static let sioRtsCtsHs = SIO_RTS_CTS_HS
+        public static let sioDtrDtsHs = SIO_DTR_DSR_HS
+        public static let sioXonXoffHs = SIO_XON_XOFF_HS
 
-        static let sioSetDtrMask = SIO_SET_DTR_MASK
-        static let sioSetRtsMask = SIO_SET_RTS_MASK
-        static let sioEraseEEPROM = SIO_RTS_CTS_HS
+        public static let sioSetDtrMask = SIO_SET_DTR_MASK
+        public static let sioSetRtsMask = SIO_SET_RTS_MASK
+        public static let sioEraseEEPROM = SIO_RTS_CTS_HS
     }
 
-    func divValue(rate: UInt32) -> UInt32 {
+    public func divValue(rate: UInt32) -> UInt32 {
         return (rate > 6000000) ? 0 : ( (6000000/rate - 1) > 0xffff) ? 0xffff : (6000000/rate - 1)
     }
 
-    enum EEPROMValue: UInt32 {
+    public enum EEPROMValue: UInt32 {
         case vendorId
         case productId
         case selfPowered
@@ -288,7 +288,7 @@ public class FTDI {
         case releaseNumber
         case externalOscillator
 
-        var rawValue: UInt32 {
+        public var rawValue: UInt32 {
             switch self {
             case .vendorId: return VENDOR_ID.rawValue
             case .productId: return PRODUCT_ID.rawValue
@@ -354,11 +354,11 @@ public class FTDI {
     };
 
     public struct VersionInfo {
-        let major: Int32
-        let minor: Int32
-        let micro: Int32
-        let versionStr: String
-        let snapshotStr: String
+        public let major: Int32
+        public let minor: Int32
+        public let micro: Int32
+        public let versionStr: String
+        public let snapshotStr: String
 
         init(_ info: ftdi_version_info) {
             self.major = info.major
@@ -418,6 +418,5 @@ public class FTDI {
 
         return result
     }
-
 
 }
