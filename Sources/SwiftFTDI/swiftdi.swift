@@ -217,12 +217,6 @@ public class FTDI {
         public static let sioResetPurfeRx = SIO_RESET_PURGE_RX
         public static let sioresetPurgeTx = SIO_RESET_PURGE_TX
 
-        public static let sioDisableFlowCtrl = SIO_DISABLE_FLOW_CTRL
-        public static let sioRtsCtsHs = SIO_RTS_CTS_HS
-        public static let sioDtrDtsHs = SIO_DTR_DSR_HS
-        public static let sioXonXoffHs = SIO_XON_XOFF_HS
-
-        public static let sioSetDtrMask = SIO_SET_DTR_MASK
         public static let sioSetRtsMask = SIO_SET_RTS_MASK
         public static let sioEraseEEPROM = SIO_RTS_CTS_HS
     }
@@ -354,6 +348,22 @@ public class FTDI {
 
 
     };
+
+    public enum FlowControl: Int32 {
+        case disable
+        case rtsCtsHs
+        case dtrDtsHs
+        case xonXoffHs
+
+        public var rawValue: Int32 {
+            switch self {
+            case .disable: return SIO_DISABLE_FLOW_CTRL
+            case .rtsCtsHs: return SIO_RTS_CTS_HS
+            case .dtrDtsHs: return SIO_DTR_DSR_HS
+            case .xonXoffHs: return SIO_XON_XOFF_HS
+            }
+        }
+    }
 
     public struct VersionInfo {
         public let major: Int32
@@ -501,7 +511,87 @@ public class FTDI {
         return result.pointee
     }
 
-    public func setFlowCtl(_ flowControl: )
+    public func setFlowCtl(_ flowControl: FlowControl) {
+        ftdi_setflowctrl(context, flowControl.rawValue)
+    }
+
+    public func setDtr(_ high: Bool) {
+        let mask = ((high ? 1 : 0) | ( SIO_SET_DTR_MASK  << 8))
+        let ret = ftdi_setdtr(context, mask)
+        print(ret)
+    }
+
+    public func setRts(_ high: Bool) {
+        let mask = ((high ? 1 : 0) | ( SIO_SET_RTS_MASK  << 8))
+        let ret = ftdi_setrts(context, mask)
+        print(ret)
+    }
+
+    public func setDtrRts(_ dtrHigh: Bool, _ rtsHigh: Bool) {
+        let dtrMask = ((dtrHigh ? 1 : 0) | ( SIO_SET_DTR_MASK  << 8))
+        let rtsMask = ((rtsHigh ? 1 : 0) | ( SIO_SET_RTS_MASK  << 8))
+        let ret = ftdi_setdtr_rts(context, dtrMask, rtsMask)
+        print(ret)
+    }
+
+    public func setEventChar(_ char: UInt8, enabled: Bool) {
+        ftdi_set_event_char(context, char, enabled ? 1 : 0)
+    }
+
+    public func setErrorChar(_ char: UInt8, enabled: Bool) {
+        ftdi_set_error_char(context, char, enabled ? 1 : 0)
+    }
+
+    public func eepromInitDefaults(manufacturer: String, product: String, serial: String) {
+        let manufacturerString = manufacturer.cString(using: .utf8) ?? []
+        let productString = product.cString(using: .utf8) ?? []
+        let serialString = serial.cString(using: .utf8) ?? []
+
+        ftdi_eeprom_initdefaults(
+            context,
+            UnsafeMutablePointer(mutating: manufacturerString),
+            UnsafeMutablePointer(mutating: productString),
+            UnsafeMutablePointer(mutating: serialString)
+        )
+    }
+
+    public func getEepromValue(type: EEPROMValue) -> Int32 {
+        let result = UnsafeMutablePointer<Int32>.allocate(capacity: 1)
+        defer { result.deallocate() }
+        let ret = ftdi_get_eeprom_value(context, ftdi_eeprom_value(rawValue: type.rawValue), result)
+        print("Get EEPROM value ret:\(ret)")
+        return result.pointee
+    }
+
+    public func readEEPROM() {
+        let ret = ftdi_read_eeprom(context)
+        print("Read EEPROM ret:\(ret)")
+    }
+
+    public func eraseEEPROM() {
+        let ret = ftdi_erase_eeprom(context)
+        print("Erase EEPROM ret:\(ret)")
+    }
+
+    public func setEEPROMValue(type: EEPROMValue, value: Int32) {
+        let ret = ftdi_set_eeprom_value(context, ftdi_eeprom_value(rawValue: type.rawValue), value)
+        print("setEEPROMValue ret:\(ret)")
+    }
+
+    public func EEPROMBuild() {
+        let ret = ftdi_eeprom_build(context)
+        print("EEPROMBuild ret:\(ret)")
+    }
+
+    public func writeEEPROM() {
+        let ret = ftdi_write_eeprom(context)
+        print("writeEEPROM ret:\(ret)")
+    }
+
+    public func decodeEEPROM(verbose: Bool) {
+        let ret = ftdi_eeprom_decode(context, verbose ? 0 : 1)
+        print("decodeEEPROM ret:\(ret)")
+    }
 
 }
 
