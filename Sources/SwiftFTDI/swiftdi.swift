@@ -497,6 +497,10 @@ public class FTDI {
         ftdi_set_latency_timer(context, latency)
     }
 
+    public func setBaudrate(_ baudrate: Int32) {
+        ftdi_set_baudrate(context, baudrate)
+    }
+
     public func getLatencyTimer() -> UInt8 {
         let result = UnsafeMutablePointer<UInt8>.allocate(capacity: 1)
         defer { result.deallocate() }
