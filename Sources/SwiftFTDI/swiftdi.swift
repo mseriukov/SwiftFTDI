@@ -155,16 +155,16 @@ public class FTDI {
             public static let writeTMS = MPSSE_WRITE_TMS
         }
 
-        public static let setBitsLow = SET_BITS_LOW
-        public static let setBitsHigh = SET_BITS_HIGH
-        public static let getBitsLow = GET_BITS_LOW
-        public static let getBitsHigh = GET_BITS_HIGH
-        public static let loopbackStart = LOOPBACK_START
-        public static let loopbackEnd = LOOPBACK_END
+        public static let setBitsLow = UInt8(SET_BITS_LOW)
+        public static let setBitsHigh = UInt8(SET_BITS_HIGH)
+        public static let getBitsLow = UInt8(GET_BITS_LOW)
+        public static let getBitsHigh = UInt8(GET_BITS_HIGH)
+        public static let loopbackStart = UInt8(LOOPBACK_START)
+        public static let loopbackEnd = UInt8(LOOPBACK_END)
         public static let tckDivisor = TCK_DIVISOR
 
-        public static let disDiv5 = DIS_DIV_5
-        public static let enDiv5 = EN_DIV_5
+        public static let disDiv5 = UInt8(DIS_DIV_5)
+        public static let enDiv5 = UInt8(EN_DIV_5)
         public static let en3phase = EN_3_PHASE
         public static let clkBits = CLK_BITS
         public static let clkBytes = CLK_BYTES
@@ -177,15 +177,15 @@ public class FTDI {
 
         public static let driveOpenCollector = DRIVE_OPEN_COLLECTOR
 
-        public static let sendImmediate = SEND_IMMEDIATE
+        public static let sendImmediate = UInt8(SEND_IMMEDIATE)
         public static let waitOnHigh = WAIT_ON_HIGH
         public static let waitOnLow = WAIT_ON_LOW
 
-        public static let readShort = READ_SHORT
-        public static let readExtended = READ_EXTENDED
+        public static let readShort = UInt8(READ_SHORT)
+        public static let readExtended = UInt8(READ_EXTENDED)
 
-        public static let writeShort = WRITE_SHORT
-        public static let writeExtended = WRITE_EXTENDED
+        public static let writeShort = UInt8(WRITE_SHORT)
+        public static let writeExtended = UInt8(WRITE_EXTENDED)
 
         public enum FlowControl {
             public static let sioReset = SIO_RESET
@@ -214,8 +214,6 @@ public class FTDI {
         }
 
         public static let sioResetSio = SIO_RESET_SIO
-        public static let sioResetPurfeRx = SIO_RESET_PURGE_RX
-        public static let sioresetPurgeTx = SIO_RESET_PURGE_TX
 
         public static let sioSetRtsMask = SIO_SET_RTS_MASK
         public static let sioEraseEEPROM = SIO_RTS_CTS_HS
@@ -456,6 +454,7 @@ public class FTDI {
             serial,
             index
         )
+        print("open: \(ret)")
     }
 
     public func writeData(_ data: Data) {
@@ -464,6 +463,26 @@ public class FTDI {
             let buf = ptr.bindMemory(to: UInt8.self)
             let ret = ftdi_write_data(self.context, buf.baseAddress!, count)
         }
+    }
+
+    public func readData(count: Int) -> Data {
+        let result = UnsafeMutablePointer<UInt8>.allocate(capacity: count)
+        result.initialize(repeating: 0, count: count)
+        defer { result.deallocate() }
+        let res = ftdi_read_data(self.context, result, Int32(count))
+        //print("read: \(res)")
+        return Data(bytes: result, count: count)
+    }
+
+    public func writeDataSetChunksize(_ chunksize: UInt32) {
+        ftdi_write_data_set_chunksize(context, chunksize)
+    }
+
+    public func writeDataGetChunksize() -> UInt32 {
+        let result = UnsafeMutablePointer<UInt32>.allocate(capacity: 1)
+        defer { result.deallocate() }
+        ftdi_write_data_get_chunksize(context, result)
+        return result.pointee
     }
 
     public func readDataSetChunksize(_ chunksize: UInt32) {
@@ -484,6 +503,10 @@ public class FTDI {
 
     public func disableBitbang() {
         ftdi_disable_bitbang(context)
+    }
+
+    public func tcioFlush() {
+        ftdi_tcioflush(context)
     }
 
     public func readPins() -> UInt8 {
