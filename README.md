@@ -1,6 +1,6 @@
 # SwiftFTDI
 
-A WIP `clibftdi` swift wrapper. 
+A forever WIP `clibftdi` swift wrapper. Do not expect any updates.
 
 Ensure that you have clibftdi instslled before trying to use it.
 
