@@ -623,9 +623,7 @@ public class FTDI {
 }
 
 extension FTDI {
-
     public func writePins(_ pins: UInt8) {
         writeData(Data(repeating: pins, count: 1))
     }
-
 }
