@@ -1,0 +1,65 @@
+import Foundation
+
+public enum SwiftFTDIError: Error {
+    case usbFindBussesFailed
+    case usbFindDevicesFailed
+    case usbUnableToOpenDevice
+    case usbUnableToClaimDevice
+    case usbDeviceNotFound
+    case usbDeviceUnavailable
+    case usbBulkWriteFailed(Int32)
+    case usbBulkTransferFailed(Int32)
+    case usbLibusbInitFailed
+    case usbResetFailed
+    case usbGetProductDescriptionFailed
+    case usbGetSerialNumberFailed
+    case usbUnableToCloseDevice
+    case usbGetDeviceListFailed
+    case usbGetDeviceDescriptorFailed
+    case usbDeviceAlreadyOpen
+
+    case ftdiUnknownInterface
+    case ftdiEEPROMInvalidAccessToChecksumProtectedArea
+    case ftdiEEPROMDeviceCantAccessUnprotectedArea
+    case ftdiEEPROMReadingChipTypeFailed
+    case ftdiEEPROMSizeExceededByCustomStrings
+    case ftdiInvalidEEPROMOrFTDIPointer
+    case ftdiEEPROMInvalidCBUSFunctionSetting
+    case ftdiEEPROMChipDoesntSupportInvert
+    case ftdiEEPROMChipDoesntSupportHighCurrentDrive
+    case ftdiEEPROMNoConnectedOrUnknownType
+    case ftdiEEPROMWritingMagicFailed
+    case ftdiEEPROMUnexpectedValue
+    case ftdiEEPROMEraseFailed
+    case ftdiEEPROMReadFailed
+    case ftdiEEPROMWriteFailed
+    case ftdiEEPROMValueDoesntExist
+    case ftdiEEPROMValueIsntUserSettable
+    case ftdiNoStructFTDIContext
+    case ftdiNoStructFTDIEEPROM
+    case ftdiNoConnectedDeviceOrNotYetOpened
+    case ftdiUnableToSetEventCharacter
+    case ftdiUnableToSetErrorCharacter
+    case ftdiSetDtrFailed
+    case ftdiSetRtsFailed
+    case ftdiSetDtrRtsFailed
+    case ftdiCouldntAllocateReadBuffer
+    case ftdiCouldntAllocateStructBuffer
+    case ftdiContextCreationFailed
+    case ftdiInitializationFailed
+    case ftdiCantEnableBitbangMode
+    case ftdiCantDisableBitbangMode
+    case ftdiReadPinsFailed
+    case ftdiReadBufferPurgeFailed
+    case ftdiWriteBufferPurgeFailed
+    case ftdiLatencyOutOfRange(UInt8)
+    case ftdiUnableToSetLatencyTimer
+    case ftdiSetFlowControlFailed
+    case ftdiUnableToRetrieveStatusInformation
+    case ftdiUnableToGetLatencyTimer
+    case ftdiSetBaudrateFailed
+    case ftdiInvalidBaudrate(Int32)
+    case ftdiContextInvalid
+
+    case unknown(Int32)
+}

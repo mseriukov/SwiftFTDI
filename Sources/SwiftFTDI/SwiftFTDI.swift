@@ -2,7 +2,6 @@ import clibftdi
 import Foundation
 
 public class FTDI {
-
     public enum ChipType: UInt32 {
         case _AM
         case _BM
@@ -389,10 +388,19 @@ public class FTDI {
 
     private let context: UnsafeMutablePointer<ftdi_context>!
 
-    public init() {
-        let context = ftdi_new()
+    public init() throws {
+        guard let context = ftdi_new() else {
+            throw SwiftFTDIError.ftdiContextCreationFailed
+        }
         self.context = context
-        ftdi_init(context)
+        let ret = ftdi_init(context)
+        switch ret {
+        case 0: break
+        case -1: throw SwiftFTDIError.ftdiCouldntAllocateReadBuffer
+        case -2: throw SwiftFTDIError.ftdiCouldntAllocateStructBuffer
+        case -3: throw SwiftFTDIError.usbLibusbInitFailed
+        default: throw SwiftFTDIError.unknown(ret)
+        }
     }
 
     deinit {
@@ -400,13 +408,20 @@ public class FTDI {
         ftdi_free(context)
     }
 
-    public func setInterface(_ interface: Interface) {
+
+    public func setInterface(_ interface: Interface) throws {
         let ret = ftdi_set_interface(context,  interface.ftdiInterface)
-        print(ret)
+        switch ret {
+        case 0: break
+        case -1: throw SwiftFTDIError.ftdiUnknownInterface
+        case -2: throw SwiftFTDIError.usbDeviceUnavailable
+        case -3: throw SwiftFTDIError.usbDeviceAlreadyOpen
+        default: throw SwiftFTDIError.unknown(ret)
+        }
     }
 
     public func getLibraryVersion() -> VersionInfo {
-        return VersionInfo(ftdi_get_library_version())
+        VersionInfo(ftdi_get_library_version())
     }
 
     public func usbFindAll(vendor: Int32, product: Int32) -> [FTDIDevice] {
@@ -422,7 +437,6 @@ public class FTDI {
         var result: [FTDIDevice] = []
 
         while true {
-
             let bufferLength: Int32 = 256
             let manufacturerBuf = UnsafeMutablePointer<Int8>.allocate(capacity: Int(bufferLength))
             let descriptionBuf = UnsafeMutablePointer<Int8>.allocate(capacity: Int(bufferLength))
@@ -445,7 +459,13 @@ public class FTDI {
         return result
     }
 
-    public func usbOpenDescIndex(vendor: Int32? = nil, product: Int32? = nil, description: String? = nil, serial: String? = nil, index: UInt32 = 0) {
+    public func usbOpenDescIndex(
+        vendor: Int32? = nil,
+        product: Int32? = nil,
+        description: String? = nil,
+        serial: String? = nil,
+        index: UInt32 = 0
+    ) throws {
         let ret = ftdi_usb_open_desc_index(
             context,
             vendor ?? 0,
@@ -454,176 +474,361 @@ public class FTDI {
             serial,
             index
         )
-        print("open: \(ret)")
-    }
-
-    public func writeData(_ data: Data) {
-        let count = Int32(data.count)
-        data.withUnsafeBytes { ptr in
-            let buf = ptr.bindMemory(to: UInt8.self)
-            let ret = ftdi_write_data(self.context, buf.baseAddress!, count)
+        switch ret {
+        case 0: break
+        case -1: throw SwiftFTDIError.usbFindBussesFailed
+        case -2: throw SwiftFTDIError.usbFindDevicesFailed
+        case -3: throw SwiftFTDIError.usbDeviceNotFound
+        case -4: throw SwiftFTDIError.usbUnableToOpenDevice
+        case -5: throw SwiftFTDIError.usbUnableToClaimDevice
+        case -6: throw SwiftFTDIError.usbResetFailed
+        case -7: throw SwiftFTDIError.ftdiSetBaudrateFailed
+        case -8: throw SwiftFTDIError.usbGetProductDescriptionFailed
+        case -9: throw SwiftFTDIError.usbGetSerialNumberFailed
+        case -10: throw SwiftFTDIError.usbUnableToCloseDevice
+        case -11: throw SwiftFTDIError.ftdiContextInvalid
+        case -12: throw SwiftFTDIError.usbGetDeviceListFailed
+        case -13: throw SwiftFTDIError.usbGetDeviceDescriptorFailed
+        default: throw SwiftFTDIError.unknown(ret)
         }
     }
 
-    public func readData(count: Int) -> Data {
+    @discardableResult
+    public func writeData(_ data: Data) throws -> Int32  {
+        let count = Int32(data.count)
+        var ret: Int32 = 0
+        data.withUnsafeBytes { ptr in
+            let buf = ptr.bindMemory(to: UInt8.self)
+            ret = ftdi_write_data(self.context, buf.baseAddress!, count)
+        }
+        switch ret {
+        case -666: throw SwiftFTDIError.usbDeviceUnavailable
+        case ..<0: throw SwiftFTDIError.usbBulkWriteFailed(ret)
+        default: return ret
+        }
+    }
+
+    public func readData(count: Int) throws -> Data {
         let result = UnsafeMutablePointer<UInt8>.allocate(capacity: count)
         result.initialize(repeating: 0, count: count)
         defer { result.deallocate() }
-        let res = ftdi_read_data(self.context, result, Int32(count))
-        //print("read: \(res)")
+        let ret = ftdi_read_data(self.context, result, Int32(count))
+        switch ret {
+        case -666: throw SwiftFTDIError.usbDeviceUnavailable
+        case ..<0: throw SwiftFTDIError.usbBulkTransferFailed(ret)
+        default: break
+        }
         return Data(bytes: result, count: count)
     }
 
-    public func writeDataSetChunksize(_ chunksize: UInt32) {
-        ftdi_write_data_set_chunksize(context, chunksize)
+    public func writeDataSetChunksize(_ chunksize: UInt32) throws {
+        let ret = ftdi_write_data_set_chunksize(context, chunksize)
+        switch ret {
+        case 0: break
+        case -1: throw SwiftFTDIError.ftdiContextInvalid
+        default: throw SwiftFTDIError.unknown(ret)
+        }
     }
 
-    public func writeDataGetChunksize() -> UInt32 {
+    public func writeDataGetChunksize() throws -> UInt32 {
         let result = UnsafeMutablePointer<UInt32>.allocate(capacity: 1)
         defer { result.deallocate() }
-        ftdi_write_data_get_chunksize(context, result)
+        let ret = ftdi_write_data_get_chunksize(context, result)
+        switch ret {
+        case 0: break
+        case -1: throw SwiftFTDIError.ftdiContextInvalid
+        default: throw SwiftFTDIError.unknown(ret)
+        }
         return result.pointee
     }
 
-    public func readDataSetChunksize(_ chunksize: UInt32) {
-        ftdi_read_data_set_chunksize(context, chunksize)
+    public func readDataSetChunksize(_ chunksize: UInt32) throws {
+        let ret = ftdi_read_data_set_chunksize(context, chunksize)
+        switch ret {
+        case 0: break
+        case -1: throw SwiftFTDIError.ftdiContextInvalid
+        default: throw SwiftFTDIError.unknown(ret)
+        }
     }
 
-    public func readDataGetChunksize() -> UInt32 {
+    public func readDataGetChunksize() throws -> UInt32 {
         let result = UnsafeMutablePointer<UInt32>.allocate(capacity: 1)
         defer { result.deallocate() }
-        ftdi_read_data_get_chunksize(context, result)
+        let ret = ftdi_read_data_get_chunksize(context, result)
+        switch ret {
+        case 0: break
+        case -1: throw SwiftFTDIError.ftdiContextInvalid
+        default: throw SwiftFTDIError.unknown(ret)
+        }
         return result.pointee
     }
 
-    public func setBitmode(bitmask: UInt8, mode: Bitmode) {
+    public func setBitmode(bitmask: UInt8, mode: Bitmode) throws {
         let ret = ftdi_set_bitmode(context, bitmask, mode.rawValue)
-        print(ret)
+        switch ret {
+        case 0: break
+        case -1: throw SwiftFTDIError.ftdiCantEnableBitbangMode
+        case -2: throw SwiftFTDIError.usbDeviceUnavailable
+        default: throw SwiftFTDIError.unknown(ret)
+        }
     }
 
-    public func disableBitbang() {
-        ftdi_disable_bitbang(context)
+    public func disableBitbang() throws {
+        let ret = ftdi_disable_bitbang(context)
+        switch ret {
+        case 0: break
+        case -1: throw SwiftFTDIError.ftdiCantDisableBitbangMode
+        case -2: throw SwiftFTDIError.usbDeviceUnavailable
+        default: throw SwiftFTDIError.unknown(ret)
+        }
     }
 
-    public func tcioFlush() {
-        ftdi_tcioflush(context)
+    public func tcioFlush() throws {
+        let ret = ftdi_tcioflush(context)
+        switch ret {
+        case 0: break
+        case -1: throw SwiftFTDIError.ftdiReadBufferPurgeFailed
+        case -2: throw SwiftFTDIError.ftdiWriteBufferPurgeFailed
+        case -3: throw SwiftFTDIError.usbDeviceUnavailable
+        default: throw SwiftFTDIError.unknown(ret)
+        }
     }
 
-    public func readPins() -> UInt8 {
+    public func readPins() throws -> UInt8 {
         let result = UnsafeMutablePointer<UInt8>.allocate(capacity: 1)
         defer { result.deallocate() }
-        ftdi_read_pins(context, result)
+        let ret = ftdi_read_pins(context, result)
+        switch ret {
+        case 0: break
+        case -1: throw SwiftFTDIError.ftdiReadPinsFailed
+        case -2: throw SwiftFTDIError.usbDeviceUnavailable
+        default: throw SwiftFTDIError.unknown(ret)
+        }
         return result.pointee
     }
 
-    public func setLatencyTimer(_ latency: UInt8) {
-        ftdi_set_latency_timer(context, latency)
+    public func setLatencyTimer(_ latency: UInt8) throws {
+        let ret = ftdi_set_latency_timer(context, latency)
+        switch ret {
+        case 0: break
+        case -1: throw SwiftFTDIError.ftdiLatencyOutOfRange(latency)
+        case -2: throw SwiftFTDIError.ftdiUnableToSetLatencyTimer
+        case -3: throw SwiftFTDIError.usbDeviceUnavailable
+        default: throw SwiftFTDIError.unknown(ret)
+        }
     }
 
-    public func setBaudrate(_ baudrate: Int32) {
-        ftdi_set_baudrate(context, baudrate)
+    public func setBaudrate(_ baudrate: Int32) throws {
+        let ret = ftdi_set_baudrate(context, baudrate)
+        switch ret {
+        case 0: break
+        case -1: throw SwiftFTDIError.ftdiInvalidBaudrate(baudrate)
+        case -2: throw SwiftFTDIError.ftdiSetBaudrateFailed
+        case -3: throw SwiftFTDIError.usbDeviceUnavailable
+        default: throw SwiftFTDIError.unknown(ret)
+        }
     }
 
-    public func getLatencyTimer() -> UInt8 {
+    public func getLatencyTimer() throws -> UInt8 {
         let result = UnsafeMutablePointer<UInt8>.allocate(capacity: 1)
         defer { result.deallocate() }
-        ftdi_get_latency_timer(context, result)
+        let ret = ftdi_get_latency_timer(context, result)
+        switch ret {
+        case 0: break
+        case -1: throw SwiftFTDIError.ftdiUnableToGetLatencyTimer
+        case -2: throw SwiftFTDIError.usbDeviceUnavailable
+        default: throw SwiftFTDIError.unknown(ret)
+        }
         return result.pointee
     }
 
-    public func pollModemStatus() -> UInt16 {
+    public func pollModemStatus() throws -> UInt16 {
         let result = UnsafeMutablePointer<UInt16>.allocate(capacity: 1)
         defer { result.deallocate() }
-        ftdi_poll_modem_status(context, result)
+        let ret = ftdi_poll_modem_status(context, result)
+        switch ret {
+        case 0: break
+        case -1: throw SwiftFTDIError.ftdiUnableToRetrieveStatusInformation
+        case -2: throw SwiftFTDIError.usbDeviceUnavailable
+        default: throw SwiftFTDIError.unknown(ret)
+        }
         return result.pointee
     }
 
-    public func setFlowCtl(_ flowControl: FlowControl) {
-        ftdi_setflowctrl(context, flowControl.rawValue)
+    public func setFlowCtl(_ flowControl: FlowControl) throws {
+        let ret = ftdi_setflowctrl(context, flowControl.rawValue)
+        switch ret {
+        case 0: break
+        case -1: throw SwiftFTDIError.ftdiSetFlowControlFailed
+        case -2: throw SwiftFTDIError.usbDeviceUnavailable
+        default: throw SwiftFTDIError.unknown(ret)
+        }
     }
 
-    public func setDtr(_ high: Bool) {
+    public func setDtr(_ high: Bool) throws {
         let mask = ((high ? 1 : 0) | ( SIO_SET_DTR_MASK  << 8))
         let ret = ftdi_setdtr(context, mask)
-        print(ret)
+        switch ret {
+        case 0: break
+        case -1: throw SwiftFTDIError.ftdiSetDtrFailed
+        case -2: throw SwiftFTDIError.usbDeviceUnavailable
+        default: throw SwiftFTDIError.unknown(ret)
+        }
     }
 
-    public func setRts(_ high: Bool) {
+    public func setRts(_ high: Bool) throws {
         let mask = ((high ? 1 : 0) | ( SIO_SET_RTS_MASK  << 8))
         let ret = ftdi_setrts(context, mask)
-        print(ret)
+        switch ret {
+        case 0: break
+        case -1: throw SwiftFTDIError.ftdiSetRtsFailed
+        case -2: throw SwiftFTDIError.usbDeviceUnavailable
+        default: throw SwiftFTDIError.unknown(ret)
+        }
     }
 
-    public func setDtrRts(_ dtrHigh: Bool, _ rtsHigh: Bool) {
+    public func setDtrRts(_ dtrHigh: Bool, _ rtsHigh: Bool) throws {
         let dtrMask = ((dtrHigh ? 1 : 0) | ( SIO_SET_DTR_MASK  << 8))
         let rtsMask = ((rtsHigh ? 1 : 0) | ( SIO_SET_RTS_MASK  << 8))
         let ret = ftdi_setdtr_rts(context, dtrMask, rtsMask)
-        print(ret)
+        switch ret {
+        case 0: break
+        case -1: throw SwiftFTDIError.ftdiSetDtrRtsFailed
+        case -2: throw SwiftFTDIError.usbDeviceUnavailable
+        default: throw SwiftFTDIError.unknown(ret)
+        }
     }
 
-    public func setEventChar(_ char: UInt8, enabled: Bool) {
-        ftdi_set_event_char(context, char, enabled ? 1 : 0)
+    public func setEventChar(_ char: UInt8, enabled: Bool) throws {
+        let ret = ftdi_set_event_char(context, char, enabled ? 1 : 0)
+        switch ret {
+        case 0: break
+        case -1: throw SwiftFTDIError.ftdiUnableToSetEventCharacter
+        case -2: throw SwiftFTDIError.usbDeviceUnavailable
+        default: throw SwiftFTDIError.unknown(ret)
+        }
     }
 
-    public func setErrorChar(_ char: UInt8, enabled: Bool) {
-        ftdi_set_error_char(context, char, enabled ? 1 : 0)
+    public func setErrorChar(_ char: UInt8, enabled: Bool) throws {
+        let ret = ftdi_set_error_char(context, char, enabled ? 1 : 0)
+        switch ret {
+        case 0: break
+        case -1: throw SwiftFTDIError.ftdiUnableToSetErrorCharacter
+        case -2: throw SwiftFTDIError.usbDeviceUnavailable
+        default: throw SwiftFTDIError.unknown(ret)
+        }
     }
 
-    public func eepromInitDefaults(manufacturer: String, product: String, serial: String) {
-        let manufacturerString = manufacturer.cString(using: .utf8) ?? []
-        let productString = product.cString(using: .utf8) ?? []
-        let serialString = serial.cString(using: .utf8) ?? []
-
-        ftdi_eeprom_initdefaults(
-            context,
-            UnsafeMutablePointer(mutating: manufacturerString),
-            UnsafeMutablePointer(mutating: productString),
-            UnsafeMutablePointer(mutating: serialString)
-        )
+    public func eepromInitDefaults(manufacturer: String, product: String, serial: String) throws {
+        var manufacturerString = manufacturer.cString(using: .utf8) ?? []
+        var productString = product.cString(using: .utf8) ?? []
+        var serialString = serial.cString(using: .utf8) ?? []
+        var ret: Int32 = 0
+        manufacturerString.withUnsafeMutableBytes { manufacturerBuf in
+            productString.withUnsafeMutableBytes { productBuf in
+                serialString.withUnsafeMutableBytes { serialBuf in
+                    ret = ftdi_eeprom_initdefaults(
+                        context,
+                        manufacturerBuf.baseAddress!,
+                        productBuf.baseAddress!,
+                        serialBuf.baseAddress!
+                    )
+                }
+            }
+        }
+        switch ret {
+        case 0: break
+        case -1: throw SwiftFTDIError.ftdiNoStructFTDIContext
+        case -2: throw SwiftFTDIError.ftdiNoStructFTDIEEPROM
+        case -3: throw SwiftFTDIError.ftdiNoConnectedDeviceOrNotYetOpened
+        default: throw SwiftFTDIError.unknown(ret)
+        }
     }
 
-    public func getEepromValue(type: EEPROMValue) -> Int32 {
+    public func getEepromValue(type: EEPROMValue) throws -> Int32 {
         let result = UnsafeMutablePointer<Int32>.allocate(capacity: 1)
         defer { result.deallocate() }
         let ret = ftdi_get_eeprom_value(context, ftdi_eeprom_value(rawValue: type.rawValue), result)
-        print("Get EEPROM value ret:\(ret)")
+        switch ret {
+        case 0: break
+        case -1: throw SwiftFTDIError.ftdiEEPROMValueDoesntExist
+        default: throw SwiftFTDIError.unknown(ret)
+        }
         return result.pointee
     }
 
-    public func readEEPROM() {
+    public func readEEPROM() throws {
         let ret = ftdi_read_eeprom(context)
-        print("Read EEPROM ret:\(ret)")
+        switch ret {
+        case 0: break
+        case -1: throw SwiftFTDIError.ftdiEEPROMReadFailed
+        case -2: throw SwiftFTDIError.usbDeviceUnavailable
+        default: throw SwiftFTDIError.unknown(ret)
+        }
     }
 
-    public func eraseEEPROM() {
+    public func eraseEEPROM() throws {
         let ret = ftdi_erase_eeprom(context)
-        print("Erase EEPROM ret:\(ret)")
+        switch ret {
+        case 0: break
+        case -1: throw SwiftFTDIError.ftdiEEPROMEraseFailed
+        case -2: throw SwiftFTDIError.usbDeviceUnavailable
+        case -3: throw SwiftFTDIError.ftdiEEPROMWritingMagicFailed
+        case -4: throw SwiftFTDIError.ftdiEEPROMReadFailed
+        case -5: throw SwiftFTDIError.ftdiEEPROMUnexpectedValue
+        default: throw SwiftFTDIError.unknown(ret)
+        }
     }
 
-    public func setEEPROMValue(type: EEPROMValue, value: Int32) {
+    public func setEEPROMValue(type: EEPROMValue, value: Int32) throws {
         let ret = ftdi_set_eeprom_value(context, ftdi_eeprom_value(rawValue: type.rawValue), value)
-        print("setEEPROMValue ret:\(ret)")
+        switch ret {
+        case 0: break
+        case -1: throw SwiftFTDIError.ftdiEEPROMValueDoesntExist
+        case -2: throw SwiftFTDIError.ftdiEEPROMValueIsntUserSettable
+        default: throw SwiftFTDIError.unknown(ret)
+        }
     }
 
-    public func EEPROMBuild() {
+    public func EEPROMBuild() throws -> Int32 {
         let ret = ftdi_eeprom_build(context)
-        print("EEPROMBuild ret:\(ret)")
+        switch ret {
+        case 0...: return ret
+        case -1: throw SwiftFTDIError.ftdiEEPROMSizeExceededByCustomStrings
+        case -2: throw SwiftFTDIError.ftdiInvalidEEPROMOrFTDIPointer
+        case -3: throw SwiftFTDIError.ftdiEEPROMInvalidCBUSFunctionSetting
+        case -4: throw SwiftFTDIError.ftdiEEPROMChipDoesntSupportInvert
+        case -5: throw SwiftFTDIError.ftdiEEPROMChipDoesntSupportHighCurrentDrive
+        case -6: throw SwiftFTDIError.ftdiEEPROMNoConnectedOrUnknownType
+        default: throw SwiftFTDIError.unknown(ret)
+        }
     }
 
-    public func writeEEPROM() {
+    public func writeEEPROM() throws {
         let ret = ftdi_write_eeprom(context)
-        print("writeEEPROM ret:\(ret)")
+        switch ret {
+        case 0: break
+        case -1: throw SwiftFTDIError.ftdiEEPROMWriteFailed
+        case -2: throw SwiftFTDIError.usbDeviceUnavailable
+        case -3: throw SwiftFTDIError.ftdiEEPROMInvalidAccessToChecksumProtectedArea
+        case -4: throw SwiftFTDIError.ftdiEEPROMDeviceCantAccessUnprotectedArea
+        case -5: throw SwiftFTDIError.ftdiEEPROMReadingChipTypeFailed
+        default: throw SwiftFTDIError.unknown(ret)
+        }
     }
 
-    public func decodeEEPROM(verbose: Bool) {
+    public func decodeEEPROM(verbose: Bool) throws {
         let ret = ftdi_eeprom_decode(context, verbose ? 0 : 1)
-        print("decodeEEPROM ret:\(ret)")
+        switch ret {
+        case 0: break
+        default: throw SwiftFTDIError.unknown(ret)
+        }
     }
 
 }
 
 extension FTDI {
-    public func writePins(_ pins: UInt8) {
-        writeData(Data(repeating: pins, count: 1))
+    public func writePins(_ pins: UInt8) throws {
+        try writeData(Data(repeating: pins, count: 1))
     }
 }
