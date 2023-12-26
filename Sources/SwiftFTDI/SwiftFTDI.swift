@@ -219,7 +219,7 @@ public class FTDI {
     }
 
     public func divValue(rate: UInt32) -> UInt32 {
-        return (rate > 6000000) ? 0 : ( (6000000/rate - 1) > 0xffff) ? 0xffff : (6000000/rate - 1)
+        return (rate > 6000000) ? 0 : ( (6000000 / rate - 1) > 0xffff) ? 0xffff : (6000000 / rate - 1)
     }
 
     public enum EEPROMValue: UInt32 {
