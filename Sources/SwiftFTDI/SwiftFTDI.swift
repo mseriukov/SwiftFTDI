@@ -398,7 +398,7 @@ public class FTDI {
         case 0: break
         case -1: throw SwiftFTDIError.ftdiCouldntAllocateReadBuffer
         case -2: throw SwiftFTDIError.ftdiCouldntAllocateStructBuffer
-        case -3: throw SwiftFTDIError.usbLibusbInitFailed
+        case -3: throw SwiftFTDIError.usb(.libusbInitFailed)
         default: throw SwiftFTDIError.unknown(ret)
         }
     }
@@ -414,8 +414,8 @@ public class FTDI {
         switch ret {
         case 0: break
         case -1: throw SwiftFTDIError.ftdiUnknownInterface
-        case -2: throw SwiftFTDIError.usbDeviceUnavailable
-        case -3: throw SwiftFTDIError.usbDeviceAlreadyOpen
+        case -2: throw SwiftFTDIError.usb(.deviceUnavailable)
+        case -3: throw SwiftFTDIError.usb(.deviceAlreadyOpen)
         default: throw SwiftFTDIError.unknown(ret)
         }
     }
@@ -476,19 +476,19 @@ public class FTDI {
         )
         switch ret {
         case 0: break
-        case -1: throw SwiftFTDIError.usbFindBussesFailed
-        case -2: throw SwiftFTDIError.usbFindDevicesFailed
-        case -3: throw SwiftFTDIError.usbDeviceNotFound
-        case -4: throw SwiftFTDIError.usbUnableToOpenDevice
-        case -5: throw SwiftFTDIError.usbUnableToClaimDevice
-        case -6: throw SwiftFTDIError.usbResetFailed
+        case -1: throw SwiftFTDIError.usb(.findBussesFailed)
+        case -2: throw SwiftFTDIError.usb(.findDevicesFailed)
+        case -3: throw SwiftFTDIError.usb(.deviceNotFound)
+        case -4: throw SwiftFTDIError.usb(.unableToOpenDevice)
+        case -5: throw SwiftFTDIError.usb(.unableToClaimDevice)
+        case -6: throw SwiftFTDIError.usb(.resetFailed)
         case -7: throw SwiftFTDIError.ftdiSetBaudrateFailed
-        case -8: throw SwiftFTDIError.usbGetProductDescriptionFailed
-        case -9: throw SwiftFTDIError.usbGetSerialNumberFailed
-        case -10: throw SwiftFTDIError.usbUnableToCloseDevice
+        case -8: throw SwiftFTDIError.usb(.getProductDescriptionFailed)
+        case -9: throw SwiftFTDIError.usb(.getSerialNumberFailed)
+        case -10: throw SwiftFTDIError.usb(.unableToCloseDevice)
         case -11: throw SwiftFTDIError.ftdiContextInvalid
-        case -12: throw SwiftFTDIError.usbGetDeviceListFailed
-        case -13: throw SwiftFTDIError.usbGetDeviceDescriptorFailed
+        case -12: throw SwiftFTDIError.usb(.getDeviceListFailed)
+        case -13: throw SwiftFTDIError.usb(.getDeviceDescriptorFailed)
         default: throw SwiftFTDIError.unknown(ret)
         }
     }
@@ -502,8 +502,8 @@ public class FTDI {
             ret = ftdi_write_data(self.context, buf.baseAddress!, count)
         }
         switch ret {
-        case -666: throw SwiftFTDIError.usbDeviceUnavailable
-        case ..<0: throw SwiftFTDIError.usbBulkWriteFailed(ret)
+        case -666: throw SwiftFTDIError.usb(.deviceUnavailable)
+        case ..<0: throw SwiftFTDIError.usb(.bulkWriteFailed(ret))
         default: return ret
         }
     }
@@ -514,8 +514,8 @@ public class FTDI {
         defer { result.deallocate() }
         let ret = ftdi_read_data(self.context, result, Int32(count))
         switch ret {
-        case -666: throw SwiftFTDIError.usbDeviceUnavailable
-        case ..<0: throw SwiftFTDIError.usbBulkTransferFailed(ret)
+        case -666: throw SwiftFTDIError.usb(.deviceUnavailable)
+        case ..<0: throw SwiftFTDIError.usb(.bulkTransferFailed(ret))
         default: break
         }
         return Data(bytes: result, count: count)
@@ -568,7 +568,7 @@ public class FTDI {
         switch ret {
         case 0: break
         case -1: throw SwiftFTDIError.ftdiCantEnableBitbangMode
-        case -2: throw SwiftFTDIError.usbDeviceUnavailable
+        case -2: throw SwiftFTDIError.usb(.deviceUnavailable)
         default: throw SwiftFTDIError.unknown(ret)
         }
     }
@@ -578,7 +578,7 @@ public class FTDI {
         switch ret {
         case 0: break
         case -1: throw SwiftFTDIError.ftdiCantDisableBitbangMode
-        case -2: throw SwiftFTDIError.usbDeviceUnavailable
+        case -2: throw SwiftFTDIError.usb(.deviceUnavailable)
         default: throw SwiftFTDIError.unknown(ret)
         }
     }
@@ -589,7 +589,7 @@ public class FTDI {
         case 0: break
         case -1: throw SwiftFTDIError.ftdiReadBufferPurgeFailed
         case -2: throw SwiftFTDIError.ftdiWriteBufferPurgeFailed
-        case -3: throw SwiftFTDIError.usbDeviceUnavailable
+        case -3: throw SwiftFTDIError.usb(.deviceUnavailable)
         default: throw SwiftFTDIError.unknown(ret)
         }
     }
@@ -601,7 +601,7 @@ public class FTDI {
         switch ret {
         case 0: break
         case -1: throw SwiftFTDIError.ftdiReadPinsFailed
-        case -2: throw SwiftFTDIError.usbDeviceUnavailable
+        case -2: throw SwiftFTDIError.usb(.deviceUnavailable)
         default: throw SwiftFTDIError.unknown(ret)
         }
         return result.pointee
@@ -613,7 +613,7 @@ public class FTDI {
         case 0: break
         case -1: throw SwiftFTDIError.ftdiLatencyOutOfRange(latency)
         case -2: throw SwiftFTDIError.ftdiUnableToSetLatencyTimer
-        case -3: throw SwiftFTDIError.usbDeviceUnavailable
+        case -3: throw SwiftFTDIError.usb(.deviceUnavailable)
         default: throw SwiftFTDIError.unknown(ret)
         }
     }
@@ -624,7 +624,7 @@ public class FTDI {
         case 0: break
         case -1: throw SwiftFTDIError.ftdiInvalidBaudrate(baudrate)
         case -2: throw SwiftFTDIError.ftdiSetBaudrateFailed
-        case -3: throw SwiftFTDIError.usbDeviceUnavailable
+        case -3: throw SwiftFTDIError.usb(.deviceUnavailable)
         default: throw SwiftFTDIError.unknown(ret)
         }
     }
@@ -636,7 +636,7 @@ public class FTDI {
         switch ret {
         case 0: break
         case -1: throw SwiftFTDIError.ftdiUnableToGetLatencyTimer
-        case -2: throw SwiftFTDIError.usbDeviceUnavailable
+        case -2: throw SwiftFTDIError.usb(.deviceUnavailable)
         default: throw SwiftFTDIError.unknown(ret)
         }
         return result.pointee
@@ -649,7 +649,7 @@ public class FTDI {
         switch ret {
         case 0: break
         case -1: throw SwiftFTDIError.ftdiUnableToRetrieveStatusInformation
-        case -2: throw SwiftFTDIError.usbDeviceUnavailable
+        case -2: throw SwiftFTDIError.usb(.deviceUnavailable)
         default: throw SwiftFTDIError.unknown(ret)
         }
         return result.pointee
@@ -660,7 +660,7 @@ public class FTDI {
         switch ret {
         case 0: break
         case -1: throw SwiftFTDIError.ftdiSetFlowControlFailed
-        case -2: throw SwiftFTDIError.usbDeviceUnavailable
+        case -2: throw SwiftFTDIError.usb(.deviceUnavailable)
         default: throw SwiftFTDIError.unknown(ret)
         }
     }
@@ -671,7 +671,7 @@ public class FTDI {
         switch ret {
         case 0: break
         case -1: throw SwiftFTDIError.ftdiSetDtrFailed
-        case -2: throw SwiftFTDIError.usbDeviceUnavailable
+        case -2: throw SwiftFTDIError.usb(.deviceUnavailable)
         default: throw SwiftFTDIError.unknown(ret)
         }
     }
@@ -682,7 +682,7 @@ public class FTDI {
         switch ret {
         case 0: break
         case -1: throw SwiftFTDIError.ftdiSetRtsFailed
-        case -2: throw SwiftFTDIError.usbDeviceUnavailable
+        case -2: throw SwiftFTDIError.usb(.deviceUnavailable)
         default: throw SwiftFTDIError.unknown(ret)
         }
     }
@@ -694,7 +694,7 @@ public class FTDI {
         switch ret {
         case 0: break
         case -1: throw SwiftFTDIError.ftdiSetDtrRtsFailed
-        case -2: throw SwiftFTDIError.usbDeviceUnavailable
+        case -2: throw SwiftFTDIError.usb(.deviceUnavailable)
         default: throw SwiftFTDIError.unknown(ret)
         }
     }
@@ -704,7 +704,7 @@ public class FTDI {
         switch ret {
         case 0: break
         case -1: throw SwiftFTDIError.ftdiUnableToSetEventCharacter
-        case -2: throw SwiftFTDIError.usbDeviceUnavailable
+        case -2: throw SwiftFTDIError.usb(.deviceUnavailable)
         default: throw SwiftFTDIError.unknown(ret)
         }
     }
@@ -714,7 +714,7 @@ public class FTDI {
         switch ret {
         case 0: break
         case -1: throw SwiftFTDIError.ftdiUnableToSetErrorCharacter
-        case -2: throw SwiftFTDIError.usbDeviceUnavailable
+        case -2: throw SwiftFTDIError.usb(.deviceUnavailable)
         default: throw SwiftFTDIError.unknown(ret)
         }
     }
@@ -762,7 +762,7 @@ public class FTDI {
         switch ret {
         case 0: break
         case -1: throw SwiftFTDIError.ftdiEEPROMReadFailed
-        case -2: throw SwiftFTDIError.usbDeviceUnavailable
+        case -2: throw SwiftFTDIError.usb(.deviceUnavailable)
         default: throw SwiftFTDIError.unknown(ret)
         }
     }
@@ -772,7 +772,7 @@ public class FTDI {
         switch ret {
         case 0: break
         case -1: throw SwiftFTDIError.ftdiEEPROMEraseFailed
-        case -2: throw SwiftFTDIError.usbDeviceUnavailable
+        case -2: throw SwiftFTDIError.usb(.deviceUnavailable)
         case -3: throw SwiftFTDIError.ftdiEEPROMWritingMagicFailed
         case -4: throw SwiftFTDIError.ftdiEEPROMReadFailed
         case -5: throw SwiftFTDIError.ftdiEEPROMUnexpectedValue
@@ -809,7 +809,7 @@ public class FTDI {
         switch ret {
         case 0: break
         case -1: throw SwiftFTDIError.ftdiEEPROMWriteFailed
-        case -2: throw SwiftFTDIError.usbDeviceUnavailable
+        case -2: throw SwiftFTDIError.usb(.deviceUnavailable)
         case -3: throw SwiftFTDIError.ftdiEEPROMInvalidAccessToChecksumProtectedArea
         case -4: throw SwiftFTDIError.ftdiEEPROMDeviceCantAccessUnprotectedArea
         case -5: throw SwiftFTDIError.ftdiEEPROMReadingChipTypeFailed

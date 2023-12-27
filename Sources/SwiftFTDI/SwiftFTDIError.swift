@@ -1,22 +1,25 @@
 import Foundation
 
 public enum SwiftFTDIError: Error {
-    case usbFindBussesFailed
-    case usbFindDevicesFailed
-    case usbUnableToOpenDevice
-    case usbUnableToClaimDevice
-    case usbDeviceNotFound
-    case usbDeviceUnavailable
-    case usbBulkWriteFailed(Int32)
-    case usbBulkTransferFailed(Int32)
-    case usbLibusbInitFailed
-    case usbResetFailed
-    case usbGetProductDescriptionFailed
-    case usbGetSerialNumberFailed
-    case usbUnableToCloseDevice
-    case usbGetDeviceListFailed
-    case usbGetDeviceDescriptorFailed
-    case usbDeviceAlreadyOpen
+    public enum USBErrorKind {
+        case findBussesFailed
+        case findDevicesFailed
+        case unableToOpenDevice
+        case unableToClaimDevice
+        case deviceNotFound
+        case deviceUnavailable
+        case bulkWriteFailed(Int32)
+        case bulkTransferFailed(Int32)
+        case libusbInitFailed
+        case resetFailed
+        case getProductDescriptionFailed
+        case getSerialNumberFailed
+        case unableToCloseDevice
+        case getDeviceListFailed
+        case getDeviceDescriptorFailed
+        case deviceAlreadyOpen
+    }
+    case usb(USBErrorKind)
 
     case ftdiUnknownInterface
     case ftdiEEPROMInvalidAccessToChecksumProtectedArea
