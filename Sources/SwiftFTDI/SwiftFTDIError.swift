@@ -21,48 +21,50 @@ public enum SwiftFTDIError: Error {
     }
     case usb(USBErrorKind)
 
-    case ftdiUnknownInterface
-    case ftdiEEPROMInvalidAccessToChecksumProtectedArea
-    case ftdiEEPROMDeviceCantAccessUnprotectedArea
-    case ftdiEEPROMReadingChipTypeFailed
-    case ftdiEEPROMSizeExceededByCustomStrings
-    case ftdiInvalidEEPROMOrFTDIPointer
-    case ftdiEEPROMInvalidCBUSFunctionSetting
-    case ftdiEEPROMChipDoesntSupportInvert
-    case ftdiEEPROMChipDoesntSupportHighCurrentDrive
-    case ftdiEEPROMNoConnectedOrUnknownType
-    case ftdiEEPROMWritingMagicFailed
-    case ftdiEEPROMUnexpectedValue
-    case ftdiEEPROMEraseFailed
-    case ftdiEEPROMReadFailed
-    case ftdiEEPROMWriteFailed
-    case ftdiEEPROMValueDoesntExist
-    case ftdiEEPROMValueIsntUserSettable
-    case ftdiNoStructFTDIContext
-    case ftdiNoStructFTDIEEPROM
-    case ftdiNoConnectedDeviceOrNotYetOpened
-    case ftdiUnableToSetEventCharacter
-    case ftdiUnableToSetErrorCharacter
-    case ftdiSetDtrFailed
-    case ftdiSetRtsFailed
-    case ftdiSetDtrRtsFailed
-    case ftdiCouldntAllocateReadBuffer
-    case ftdiCouldntAllocateStructBuffer
-    case ftdiContextCreationFailed
-    case ftdiInitializationFailed
-    case ftdiCantEnableBitbangMode
-    case ftdiCantDisableBitbangMode
-    case ftdiReadPinsFailed
-    case ftdiReadBufferPurgeFailed
-    case ftdiWriteBufferPurgeFailed
-    case ftdiLatencyOutOfRange(UInt8)
-    case ftdiUnableToSetLatencyTimer
-    case ftdiSetFlowControlFailed
-    case ftdiUnableToRetrieveStatusInformation
-    case ftdiUnableToGetLatencyTimer
-    case ftdiSetBaudrateFailed
-    case ftdiInvalidBaudrate(Int32)
-    case ftdiContextInvalid
-
+    public enum FTDIErrorKind {
+        case unknownInterface
+        case eepromInvalidAccessToChecksumProtectedArea
+        case eepromDeviceCantAccessUnprotectedArea
+        case eepromReadingChipTypeFailed
+        case eepromSizeExceededByCustomStrings
+        case invalidEEPROMOrFTDIPointer
+        case eepromInvalidCBUSFunctionSetting
+        case eepromChipDoesntSupportInvert
+        case eepromChipDoesntSupportHighCurrentDrive
+        case eepromNoConnectedOrUnknownType
+        case eepromWritingMagicFailed
+        case eepromUnexpectedValue
+        case eepromEraseFailed
+        case eepromReadFailed
+        case eepromWriteFailed
+        case eepromValueDoesntExist
+        case eepromValueIsntUserSettable
+        case noStructFTDIContext
+        case noStructFTDIEEPROM
+        case noConnectedDeviceOrNotYetOpened
+        case unableToSetEventCharacter
+        case unableToSetErrorCharacter
+        case setDtrFailed
+        case setRtsFailed
+        case setDtrRtsFailed
+        case couldntAllocateReadBuffer
+        case couldntAllocateStructBuffer
+        case contextCreationFailed
+        case initializationFailed
+        case cantEnableBitbangMode
+        case cantDisableBitbangMode
+        case readPinsFailed
+        case readBufferPurgeFailed
+        case writeBufferPurgeFailed
+        case latencyOutOfRange(UInt8)
+        case unableToSetLatencyTimer
+        case setFlowControlFailed
+        case unableToRetrieveStatusInformation
+        case unableToGetLatencyTimer
+        case setBaudrateFailed
+        case invalidBaudrate(Int32)
+        case contextInvalid
+    }
+    case ftdi(FTDIErrorKind)
     case unknown(Int32)
 }
